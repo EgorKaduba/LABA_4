@@ -1,6 +1,6 @@
 import random
 
-from questions import questions_dict as qd
+from questions_dir.questions import questions_dict as qd
 
 
 def get_list_category() -> list:  # Получить список всех категорий

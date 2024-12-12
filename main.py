@@ -3,6 +3,8 @@ from aiogram.filters import Command
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, BotCommand
 
 from config import load_config
+from inline_keyboard import create_inline_kb
+from questions_dir import questions_func
 
 config = load_config('.env')
 bot_token = config.token  # Сохраняем токен в переменную bot_token
@@ -10,16 +12,11 @@ bot_token = config.token  # Сохраняем токен в переменну�
 bot = Bot(token=bot_token)
 dp = Dispatcher()
 
-inline_keyboar = InlineKeyboardMarkup(
-    inline_keyboard=[]
-)
-
 
 @dp.message(Command(commands='start'))
 async def start(message: Message):
-    start_btn = InlineKeyboardButton(text="Начать игру", callback_data="Начать игру")
-    inline_keyboar.inline_keyboard.append([start_btn])
-    await message.answer("Привет!\nЯ - КвизБот. Нажми на кнопку 'Начать играть', чтобы сыграть со мной в квиз!",
+    inline_keyboar = create_inline_kb(1, "start_game")
+    await message.answer("Привет!👋\nЯ - КвизБот. Нажми на кнопку 'Начать играть', чтобы сыграть со мной в квиз!🎰",
                          reply_markup=inline_keyboar)
 
 
@@ -31,6 +28,12 @@ async def contacts(message: Message):
 @dp.message(Command(commands='help'))
 async def bot_help(message: Message):
     await message.answer("Пока тут ничего нет, но скоро появится")
+
+
+@dp.callback_query(F.data.in_('start_game'))
+async def start_game(callback: CallbackQuery):
+    inline_keyboar = create_inline_kb(3, *questions_func.get_list_category(), last_btn="random_question")
+    await callback.message.answer("Выбирай🤔", reply_markup=inline_keyboar)
 
 
 async def set_main_menu():
