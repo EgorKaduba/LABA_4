@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, BotCommand
+from aiogram.types import Message, CallbackQuery, BotCommand, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 from config import load_config
 from inline_keyboard import create_inline_kb
@@ -34,6 +34,31 @@ async def bot_help(message: Message):
 async def start_game(callback: CallbackQuery):
     inline_keyboar = create_inline_kb(3, *questions_func.get_list_category(), last_btn="random_question")
     await callback.message.answer("Выбирай🤔", reply_markup=inline_keyboar)
+
+
+@dp.callback_query(F.data.in_(["programming", "history", "geography", "art", "science", "random_question"]))
+async def chek_q(callback: CallbackQuery):
+    if callback.data == "random_question":
+        question = questions_func.get_random_question()
+    else:
+        question = questions_func.get_random_question_category(callback.data)
+    inline_keyboard = create_inline_kb(1, *question['варианты'])
+    await callback.message.answer(question['вопрос'], reply_markup=inline_keyboard)
+
+
+@dp.callback_query()
+async def answer(callback: CallbackQuery):
+    question_text = callback.message.text
+    choice = callback.data
+    for question in questions_func.get_all_questions():
+        if question['вопрос'] == question_text and question:
+            if question['варианты'][question['правильный_ответ']] == choice:
+                await callback.answer("Верно")
+                break
+            await callback.answer("Неверно")
+            break
+    inline_keyword = create_inline_kb(1, 'start_game')
+    await callback.message.answer("Сыграем ещё раз?", reply_markup=inline_keyword)
 
 
 async def set_main_menu():
