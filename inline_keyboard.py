@@ -17,7 +17,7 @@ def create_inline_kb(width: int,
     if args:
         for button in args:
             buttons.append(InlineKeyboardButton(
-                text=LEXICON[button] if button in LEXICON else button,
+                text=LEXICON[button] if button in LEXICON.keys() else button,
                 callback_data=button))
     if kwargs:
         for button, text in kwargs.items():
@@ -30,7 +30,7 @@ def create_inline_kb(width: int,
     # Добавляем в билдер последнюю кнопку, если она передана в функцию
     if last_btn:
         kb_builder.row(InlineKeyboardButton(
-            text=LEXICON[last_btn] if last_btn in LEXICON else last_btn,
+            text=LEXICON[last_btn] if last_btn in LEXICON.keys() else last_btn,
             callback_data=last_btn
         ))
 

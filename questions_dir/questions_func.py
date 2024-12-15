@@ -30,3 +30,17 @@ def get_random_question_category(category: str) -> dict:  # Получить р�
     if category in get_list_category():
         return random.choice(qd[category])
     return dict()
+
+
+def get_category_question(question: str) -> str:
+    for key, value in qd.items():
+        questions = [i['вопрос'] for i in value]
+        if question in questions:
+            return key
+    return ""
+
+
+def get_question_index(question: str) -> int:
+    category = get_category_question(question)
+    question_list = [i["вопрос"] for i in get_all_questions_category(category)]
+    return question_list.index(question)

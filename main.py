@@ -30,24 +30,43 @@ async def bot_help(message: Message):
     await message.answer("Пока тут ничего нет, но скоро появится")
 
 
-@dp.callback_query(F.data.in_('start_game'))
+@dp.callback_query(F.data.in_(['start_game', 'reset_game']))
 async def start_game(callback: CallbackQuery):
-    inline_keyboar = create_inline_kb(3, *questions_func.get_list_category(), last_btn="random_question")
+    await bot.edit_message_reply_markup(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                        reply_markup=None)
+    inline_keyboar = create_inline_kb(3, "IT", "history", "geography", "artt", "science", last_btn="random_question")
     await callback.message.answer("Выбирай🤔", reply_markup=inline_keyboar)
 
 
-@dp.callback_query(F.data.in_(["programming", "history", "geography", "art", "science", "random_question"]))
+@dp.callback_query(F.data.in_(["IT", "history", "geography", "artt", "science", "random_question"]))
 async def chek_q(callback: CallbackQuery):
+    await bot.edit_message_reply_markup(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                        reply_markup=None)
     if callback.data == "random_question":
         question = questions_func.get_random_question()
     else:
-        question = questions_func.get_random_question_category(callback.data)
+        question = questions_func.get_all_questions_category(callback.data)[0]
     inline_keyboard = create_inline_kb(1, *question['варианты'])
     await callback.message.answer(question['вопрос'], reply_markup=inline_keyboard)
 
 
+@dp.callback_query(F.data.in_('next_answer'))
+async def next_answer(callback: CallbackQuery):
+    number_answer = int(callback.message.text.split(' ')[0])
+    category = callback.message.text.split('\n')[0].split(' ')[-1]
+    if number_answer < len(questions_func.get_all_questions_category(category)):
+        question = questions_func.get_all_questions_category(category)[number_answer]
+        inline_keyboard = create_inline_kb(1, *question['варианты'])
+        await callback.message.answer(question['вопрос'], reply_markup=inline_keyboard)
+    else:
+        inline_keyword = create_inline_kb(1, 'reset_game')
+        await callback.message.answer("Вопросы закончились. Сыграем ещё раз?", reply_markup=inline_keyword)
+
+
 @dp.callback_query()
 async def answer(callback: CallbackQuery):
+    await bot.edit_message_reply_markup(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                        reply_markup=None)
     question_text = callback.message.text
     choice = callback.data
     for question in questions_func.get_all_questions():
@@ -55,10 +74,13 @@ async def answer(callback: CallbackQuery):
             if question['варианты'][question['правильный_ответ']] == choice:
                 await callback.answer("Верно")
                 break
-            await callback.answer("Неверно")
+            await callback.answer(f"Неверно. Правильный ответ: {question['варианты'][question['правильный_ответ']]}")
             break
-    inline_keyword = create_inline_kb(1, 'start_game')
-    await callback.message.answer("Сыграем ещё раз?", reply_markup=inline_keyword)
+    inline_keyword = create_inline_kb(2, 'next_answer', 'reset_game')
+    await callback.message.answer(
+        text=f"{questions_func.get_question_index(callback.message.text) + 1} вопрос из категории "
+             f"{questions_func.get_category_question(question_text)}\nИграем дальше?",
+        reply_markup=inline_keyword)
 
 
 async def set_main_menu():

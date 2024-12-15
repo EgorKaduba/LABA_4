@@ -1,9 +1,11 @@
 LEXICON: dict[str, str] = {
-    "programming": "Программирование",
+    "IT": "IT",
     "history": "История",
     "geography": "География",
-    "art": "Искусство",
+    "artt": "Искусство",
     "science": "Наука",
     "start_game": "Начать играть",
-    "random_question": "Рандомный вопрос"
+    "reset_game": "Играть заново",
+    "random_question": "Рандомный вопрос",
+    "next_answer": "Следующий вопрос"
 }
